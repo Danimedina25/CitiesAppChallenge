@@ -2,22 +2,18 @@ package com.danifitdev.citiesappchallenge.cities.presentation
 
 import android.util.Log
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.danifitdev.citiesappchallenge.R
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -25,9 +21,12 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.maps.android.compose.rememberMarkerState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.compose.rememberNavController
 import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
+import com.danifitdev.citiesappchallenge.core.navigation.Routes
 import com.danifitdev.citiesappchallenge.core.presentation.components.CitiesToolbar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
@@ -37,26 +36,27 @@ import com.google.maps.android.compose.MarkerState
 
 @Composable
 fun CityMapScreenRoot(
-    backStackEntry: NavBackStackEntry,
-    onBackClick: () -> Unit
+    backStackEntry: NavBackStackEntry?,
+    onBackClick: () -> Unit,
+    showBackButtonToolbar: Boolean,
 ){
-    val viewModel: CitiesViewModel = hiltViewModel(backStackEntry)
+
+    val viewModel: CitiesViewModel = if(backStackEntry != null) hiltViewModel(backStackEntry) else hiltViewModel()
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val mapStyle = remember {
         MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style)
     }
+    val cityLocation = LatLng(state.citySelected.coord.lat, state.citySelected.coord.lon)
     val cameraPositionState = rememberCameraPositionState()
-    val markerState = rememberMarkerState(position = LatLng(state.citySelected.coord.lat, state.citySelected.coord.lon))
+    val markerState = rememberMarkerState(position = cityLocation)
 
-    LaunchedEffect(state.citySelected.coord.lat, state.citySelected.coord.lon) {
+    LaunchedEffect(state.citySelected) {
         cameraPositionState.animate(
-            CameraUpdateFactory.newLatLngZoom(
-                LatLng(state.citySelected.coord.lat, state.citySelected.coord.lon), 12f
-            )
+            CameraUpdateFactory.newLatLngZoom(cityLocation, 12f)
         )
+        markerState.position = cityLocation
     }
-    Log.d("prueba",state.searchQuery.text.toString())
     CityMapScreen(
         city = state.citySelected,
         cameraPositionState = cameraPositionState,
@@ -70,8 +70,8 @@ fun CityMapScreenRoot(
                 else -> Unit
             }
             viewModel.onAction(action)
-        } )
-
+        },
+        showBackButtonToolbar)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,13 +82,14 @@ fun CityMapScreen(
     markerState: MarkerState,
     mapStyle: MapStyleOptions,
     onAction: (CitiesAction) -> Unit,
+    showBackButtonToolbar: Boolean,
 ) {
     Scaffold(
         topBar =
         {
             CitiesToolbar(
-                showBackButton = true,
-                title = stringResource(id = R.string.title_top_bar_city_map) + " de: ${city.name}, ${city.country}",
+                showBackButton = showBackButtonToolbar,
+                title = stringResource(id = R.string.title_top_bar_city_map, city.name, city.country) ,
                 modifier = Modifier,
                 onBackClick = {onAction(CitiesAction.OnBackClick)})
         }

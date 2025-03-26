@@ -16,6 +16,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CitiesRepositoryImpl @Inject constructor(
@@ -33,6 +34,10 @@ class CitiesRepositoryImpl @Inject constructor(
             .flowOn(Dispatchers.IO)
     }
 
+    override suspend fun getCity(idCity: Int): CityModel? {
+        return localDataSource.getCity(idCity)
+    }
+
     override suspend fun fetchCities(): EmptyResult<DataError> {
         return when(val result = remoteDataSource.getCities()) {
             is Result.Error -> result.asEmptyDataResult()
@@ -46,5 +51,9 @@ class CitiesRepositoryImpl @Inject constructor(
 
     override suspend fun deleteAllCities() {
         localDataSource.deleteAllCities()
+    }
+
+    override suspend fun toggleFavorite(city: CityModel) {
+        localDataSource.upserCity(city)
     }
 }

@@ -41,22 +41,24 @@ class CitiesViewModel @Inject constructor(
 
     fun onAction(action: CitiesAction) {
         when(action) {
-            CitiesAction.OnAddFavoriteCity -> {
-
-            }
             is CitiesAction.OnFilterCities -> {
                 setNewSearchQuery(action.queryString)
                 filterCities()
             }
+            is CitiesAction.OnAddFavoriteCity -> {
+                toggleFavorite(action.city)
+            }
             CitiesAction.OnBackClick -> {
 
+            }
+            is CitiesAction.OnFilterFavorites -> {
+                showFavorites(action.showFavorites)
             }
             else -> Unit
         }
     }
 
     fun setSelectedCity(city: CityModel){
-        Log.d("prueba0",_state.value.searchQuery.text.toString())
         _state.update { it.copy(citySelected = city) }
     }
 
@@ -93,7 +95,20 @@ class CitiesViewModel @Inject constructor(
         }
     }
 
+    private fun showFavorites(showFavorites: Boolean) {
+        _state.update {
+            it.copy(showFavoritesOnly = showFavorites)
+        }
+    }
+
     fun normalizeCityName(city: String): String {
         return city.lowercase()
+    }
+
+    fun toggleFavorite(city: CityModel) {
+        val toggledFavoriteCity = city.copy(isFavorite = !city.isFavorite)
+        viewModelScope.launch {
+            repository.toggleFavorite(toggledFavoriteCity)
+        }
     }
 }

@@ -9,8 +9,10 @@ import com.danifitdev.citiesappchallenge.cities.domain.datasources.CityId
 import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
 import com.danifitdev.citiesappchallenge.core.domain.util.DataError
 import com.danifitdev.citiesappchallenge.core.domain.util.Result
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -22,8 +24,18 @@ class CitiesLocalDataSourceImpl @Inject constructor
         }
     }
 
-    override suspend fun upserCity(cityModel: CityModel): Result<CityId, DataError.Local> {
-        TODO("Not yet implemented")
+    override suspend fun getCity(idCity: Int): CityModel? {
+        return citiesDao.getCity(idCity)?.toDomain()
+    }
+
+    override suspend fun upserCity(city: CityModel): Result<CityId, DataError.Local> {
+        return try {
+            val entity = city.toEntity()
+            citiesDao.upsertCity(entity)
+            Result.Success(entity._id)
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.DISK_FULL)
+        }
     }
 
     override suspend fun upsertCities(cities: List<CityModel>): Result<List<CityId>, DataError.Local> {

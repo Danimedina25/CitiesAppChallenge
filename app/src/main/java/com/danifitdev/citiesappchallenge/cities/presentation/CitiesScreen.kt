@@ -1,5 +1,6 @@
 package com.danifitdev.citiesappchallenge.cities.presentation
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import com.danifitdev.citiesappchallenge.R
 import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
 import com.danifitdev.citiesappchallenge.core.presentation.ObserveAsEvents
@@ -53,9 +57,10 @@ import com.danifitdev.citiesappchallenge.core.presentation.designsystem.White
 
 @Composable
 fun CitiesScreenRoot(
-    viewModel: CitiesViewModel = hiltViewModel(),
+    backStackEntry: NavBackStackEntry?,
     onCityClick: () -> Unit
 ) {
+    val viewModel: CitiesViewModel = if(backStackEntry != null) hiltViewModel(backStackEntry) else hiltViewModel()
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     ObserveAsEvents(viewModel.events) { event ->
@@ -69,7 +74,10 @@ fun CitiesScreenRoot(
             }
         }
     }
-    CitiesScreen(state, onAction = { action ->
+    CitiesScreen(
+        modifier = Modifier,
+        state,
+        onAction = { action ->
         when(action){
             is CitiesAction.OnClickCity ->{
                 viewModel.setSelectedCity(action.city)
@@ -84,13 +92,14 @@ fun CitiesScreenRoot(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CitiesScreen(
+    modifier: Modifier,
     state: CitiesState,
     onAction: (CitiesAction) -> Unit,
 ){
     if(state.loading){
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .background(Color.Transparent)
         ) {
@@ -103,13 +112,17 @@ fun CitiesScreen(
                 CitiesToolbar(
                     showBackButton = false,
                     title = stringResource(id = R.string.title_top_bar_cities),
-                    modifier = Modifier,
+                    modifier = modifier,
                     onBackClick = {})
             }
             ,
             modifier = Modifier
         ) { padding ->
-            CitiesList(padding, {}, {}, state,
+            CitiesList(
+                modifier,
+                padding,
+                {},
+                state,
                 onFilterAction = {onAction(CitiesAction.OnFilterCities(it))},
                 onAction
             )
@@ -119,29 +132,53 @@ fun CitiesScreen(
 
 @Composable
 fun CitiesList(
+    modifier: Modifier,
     paddingValues: PaddingValues,
     onInfoClick: () -> Unit,
-    onToggleFavorite: () -> Unit,
     state: CitiesState,
     onFilterAction: (queryString: String)->Unit,
     onAction: (CitiesAction) -> Unit,
     ) {
-    //val sortedCities = state.cities.sortedBy { it.name }
-    Column(modifier = Modifier.fillMaxSize()) {
-        SearchBar(
-            state = state,
-            onSearchQueryChange = { onFilterAction(it) },
-            paddingValues = paddingValues
-        )
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Column (modifier = modifier.weight(4f)){
+                SearchBar(
+                    state = state,
+                    onSearchQueryChange = { onFilterAction(it) },
+                    paddingValues = paddingValues
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column (modifier = modifier.weight(1f).padding(paddingValues)){
+                Switch(
+                    modifier = modifier.padding(top = 10.dp),
+                    checked = state.showFavoritesOnly,
+                    onCheckedChange = { isChecked -> onAction(CitiesAction.OnFilterFavorites(isChecked)) }
+                )
+                Text(text = stringResource(R.string.text_favorites),
+                    style = MaterialTheme.typography.bodySmall)
+            }
+        }
         LazyColumn {
-            itemsIndexed(
-                state.filteredCities.ifEmpty { if(state.searchQuery.text.isNotEmpty()) emptyList() else state.cities })
+            val filteredCities = if (state.showFavoritesOnly) {
+                state.cities.filter { it.isFavorite }
+            } else {
+                state.filteredCities.ifEmpty {
+                    if (state.searchQuery.text.isNotEmpty()) emptyList() else state.cities
+                }
+            }
+            itemsIndexed(filteredCities)
             { index, city ->
                 val backgroundColor = if (index % 2 == 0) White else LightGray
                 CityItem(
                     city = city,
                     onInfoClick = onInfoClick,
-                    onToggleFavorite = onToggleFavorite,
+                    onToggleFavorite = {onAction(CitiesAction.OnAddFavoriteCity(it))},
                     backgroundColor = backgroundColor,
                     onCityClickAction = {onAction(CitiesAction.OnClickCity(it))}
                 )
@@ -154,7 +191,7 @@ fun CitiesList(
 fun CityItem(
     city: CityModel,
     onInfoClick: () -> Unit,
-    onToggleFavorite: () -> Unit,
+    onToggleFavorite: (city: CityModel) -> Unit,
     backgroundColor: Color,
     onCityClickAction: (city: CityModel)-> Unit,
 ) {
@@ -190,7 +227,7 @@ fun CityItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { onToggleFavorite() }
+                    onClick = { onToggleFavorite(city) }
                 ) {
                     Icon(
                         imageVector = if (city.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -227,7 +264,7 @@ fun SearchBar(
                     tint = Black
                 )
             },
-            label = { Text(text = "Buscar por nombre o género",
+            label = { Text(text = stringResource(R.string.search_text),
                 style = MaterialTheme.typography.bodySmall) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -252,6 +289,7 @@ fun SearchBar(
 private fun CitiesScreenPreview() {
     CitiesAppChallengeTheme {
         CitiesScreen (
+            modifier = Modifier,
             state = CitiesState(cities = listOf(CityModel(name = "Prueba 1, US"),
                 CityModel(name = "Prueba 2, US"),
                 CityModel(name = "Prueba 3, US")

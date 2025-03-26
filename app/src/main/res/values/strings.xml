@@ -11,10 +11,11 @@
     <string name="error_unknown">An unknown error occurred.</string>
     <string name="error_not_found">Not found</string>
     <string name="error_title_dialog">Error!</string>
-    <string name="search_text">Buscar</string>
+    <string name="search_text">Buscar por nombre</string>
     <string name="error_search">No se hallaron resultados</string>
     <string name="go_back">Go back</string>
     <string name="title_top_bar_cities">Ciudades</string>
-    <string name="title_top_bar_city_map">Mapa</string>
+    <string name="title_top_bar_city_map">Mapa de: %1$s, %2$s</string>
     <string name="text_more_info_button">Info</string>
+    <string name="text_favorites">Favoritos</string>
 </resources>

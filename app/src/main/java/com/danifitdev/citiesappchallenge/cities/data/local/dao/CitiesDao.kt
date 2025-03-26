@@ -17,14 +17,14 @@ interface CitiesDao {
     @Upsert
     suspend fun upsertCities(cities: List<CityEntity>)
 
+    @Upsert
+    suspend fun upsertCity(city: CityEntity)
+
     @Query("SELECT * FROM cities_table")
     fun getCities(): Flow<List<CityEntity>>
 
-    @Query("SELECT * FROM cities_table WHERE _id = :idCity")
-    fun getCity(idCity: Int?): Flow<CityEntity?>
-
-    @Update
-    suspend fun updateCity(cityEntity: CityEntity)
+    @Query("SELECT * FROM cities_table WHERE _id = :idCity LIMIT 1")
+    fun getCity(idCity: Int?): CityEntity?
 
     @Query("DELETE FROM cities_table WHERE _id = :idCity")
     suspend fun deleteCity(idCity: Int)
