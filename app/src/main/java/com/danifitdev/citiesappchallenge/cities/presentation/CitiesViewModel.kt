@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.danifitdev.citiesappchallenge.R
+import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
 import com.danifitdev.citiesappchallenge.cities.domain.repository.CitiesRepository
 import com.danifitdev.citiesappchallenge.core.presentation.UiText
 import com.google.gson.Gson
@@ -40,9 +41,6 @@ class CitiesViewModel @Inject constructor(
 
     fun onAction(action: CitiesAction) {
         when(action) {
-            CitiesAction.OnClickCity -> {
-
-            }
             CitiesAction.OnAddFavoriteCity -> {
 
             }
@@ -55,6 +53,11 @@ class CitiesViewModel @Inject constructor(
             }
             else -> Unit
         }
+    }
+
+    fun setSelectedCity(city: CityModel){
+        Log.d("prueba0",_state.value.searchQuery.text.toString())
+        _state.update { it.copy(citySelected = city) }
     }
 
     private fun getCities() {

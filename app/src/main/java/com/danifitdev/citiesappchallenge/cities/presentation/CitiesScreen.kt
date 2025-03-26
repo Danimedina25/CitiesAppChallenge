@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
@@ -41,10 +37,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,12 +47,14 @@ import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
 import com.danifitdev.citiesappchallenge.core.presentation.ObserveAsEvents
 import com.danifitdev.citiesappchallenge.core.presentation.components.CitiesToolbar
 import com.danifitdev.citiesappchallenge.core.presentation.designsystem.Black
+import com.danifitdev.citiesappchallenge.core.presentation.designsystem.CitiesAppChallengeTheme
 import com.danifitdev.citiesappchallenge.core.presentation.designsystem.DarkGray
 import com.danifitdev.citiesappchallenge.core.presentation.designsystem.White
 
 @Composable
 fun CitiesScreenRoot(
-    viewModel: CitiesViewModel = hiltViewModel()
+    viewModel: CitiesViewModel = hiltViewModel(),
+    onCityClick: () -> Unit
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -74,6 +70,13 @@ fun CitiesScreenRoot(
         }
     }
     CitiesScreen(state, onAction = { action ->
+        when(action){
+            is CitiesAction.OnClickCity ->{
+                viewModel.setSelectedCity(action.city)
+                onCityClick()
+            }
+            else -> Unit
+        }
         viewModel.onAction(action)
     })
 }
@@ -99,15 +102,17 @@ fun CitiesScreen(
             {
                 CitiesToolbar(
                     showBackButton = false,
-                    title = stringResource(id = R.string.title_top_bar),
+                    title = stringResource(id = R.string.title_top_bar_cities),
                     modifier = Modifier,
                     onBackClick = {})
             }
             ,
-            modifier = Modifier.padding(vertical = 10.dp)
+            modifier = Modifier
         ) { padding ->
-            CitiesList(padding, {}, {}, {}, state,
-                onFilterAction = {onAction(CitiesAction.OnFilterCities(it))})
+            CitiesList(padding, {}, {}, state,
+                onFilterAction = {onAction(CitiesAction.OnFilterCities(it))},
+                onAction
+            )
         }
     }
 }
@@ -115,12 +120,12 @@ fun CitiesScreen(
 @Composable
 fun CitiesList(
     paddingValues: PaddingValues,
-    onCityClick: () -> Unit,
     onInfoClick: () -> Unit,
     onToggleFavorite: () -> Unit,
     state: CitiesState,
-    onFilterAction: (queryString: String)->Unit
-) {
+    onFilterAction: (queryString: String)->Unit,
+    onAction: (CitiesAction) -> Unit,
+    ) {
     //val sortedCities = state.cities.sortedBy { it.name }
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
@@ -135,10 +140,10 @@ fun CitiesList(
                 val backgroundColor = if (index % 2 == 0) White else LightGray
                 CityItem(
                     city = city,
-                    onCityClick = onCityClick,
                     onInfoClick = onInfoClick,
                     onToggleFavorite = onToggleFavorite,
-                    backgroundColor
+                    backgroundColor = backgroundColor,
+                    onCityClickAction = {onAction(CitiesAction.OnClickCity(it))}
                 )
             }
         }
@@ -148,21 +153,22 @@ fun CitiesList(
 @Composable
 fun CityItem(
     city: CityModel,
-    onCityClick: () -> Unit,
     onInfoClick: () -> Unit,
     onToggleFavorite: () -> Unit,
-    backgroundColor: Color
+    backgroundColor: Color,
+    onCityClickAction: (city: CityModel)-> Unit,
 ) {
     Box(modifier = Modifier
-        .background(backgroundColor)){
+        .background(backgroundColor)
+        .clickable {
+            onCityClickAction(city) }){
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp)
-            .clickable { onCityClick() }) {
+        ) {
             Column(
                 modifier = Modifier
                     .weight(2f)
-                    .clickable { onCityClick() }
             ) {
                 Text(
                     text = "${city.name}, ${city.country}",
@@ -237,6 +243,20 @@ fun SearchBar(
             ),
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CitiesScreenPreview() {
+    CitiesAppChallengeTheme {
+        CitiesScreen (
+            state = CitiesState(cities = listOf(CityModel(name = "Prueba 1, US"),
+                CityModel(name = "Prueba 2, US"),
+                CityModel(name = "Prueba 3, US")
+            )),
+            onAction = {}
         )
     }
 }

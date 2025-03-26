@@ -11,6 +11,6 @@ sealed class Routes {
     data object CityDetail: Routes()
 
     @Serializable
-    data object CityMap : Routes()
+    data object CityMap: Routes()
 
 }

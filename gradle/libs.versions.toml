@@ -37,6 +37,14 @@ kotlinx-serialization = "1.7.3"
 coreSplashscreen = "1.0.1"
 ui = "1.5.1"
 uiToolingPreview = "1.5.1"
+maps = "4.3.3"
+coroutines = "1.9.0"
+gmsLocation = "21.3.0"
+mapsUtils = "5.0.0"
+bson = "4.11.1"
+work = "2.10.0"
+secretsPlugin = "2.0.1"
+playServicesMaps = "19.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -90,6 +98,8 @@ mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
+google-maps-android-compose = { module = "com.google.maps.android:maps-compose", version.ref = "maps" }
+google-android-gms-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "gmsLocation"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -97,6 +107,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+mapsplatform-secrets-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsPlugin"}
 
 [bundles]
 koin = ["koin-core", "koin-android", "koin-android-workmanager"]

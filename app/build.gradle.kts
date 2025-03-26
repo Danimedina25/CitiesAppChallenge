@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -22,6 +24,13 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        val properties = project.rootProject.file("local.properties")
+        val mapsApiKey = if (properties.exists()) {
+            Properties().apply { load(properties.inputStream()) }.getProperty("MAPS_API_KEY", "")
+        } else {
+            ""
+        }
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -42,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -139,4 +149,11 @@ dependencies {
 
     // Si usas ViewModel en Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose.v262)
+
+    //maps
+    implementation(libs.google.maps.android.compose)
+
+    //location
+    implementation(libs.google.android.gms.play.services.location)
+
 }
