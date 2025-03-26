@@ -11,5 +11,6 @@ data class CitiesState(
     val citySelected: CityModel = CityModel(),
     val showFavoritesOnly: Boolean = false,
     val searchQuery: TextFieldState = TextFieldState(),
-    val filteredCities: List<CityModel> = emptyList()
+    val filteredCities: List<CityModel> = emptyList(),
+    val showCityInfo: Boolean = false
 )

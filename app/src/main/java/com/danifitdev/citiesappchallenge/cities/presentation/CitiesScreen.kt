@@ -1,6 +1,5 @@
 package com.danifitdev.citiesappchallenge.cities.presentation
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -121,7 +122,6 @@ fun CitiesScreen(
             CitiesList(
                 modifier,
                 padding,
-                {},
                 state,
                 onFilterAction = {onAction(CitiesAction.OnFilterCities(it))},
                 onAction
@@ -134,7 +134,6 @@ fun CitiesScreen(
 fun CitiesList(
     modifier: Modifier,
     paddingValues: PaddingValues,
-    onInfoClick: () -> Unit,
     state: CitiesState,
     onFilterAction: (queryString: String)->Unit,
     onAction: (CitiesAction) -> Unit,
@@ -177,7 +176,7 @@ fun CitiesList(
                 val backgroundColor = if (index % 2 == 0) White else LightGray
                 CityItem(
                     city = city,
-                    onInfoClick = onInfoClick,
+                    onInfoClick = {onAction(CitiesAction.OnShowCityInfo(it))},
                     onToggleFavorite = {onAction(CitiesAction.OnAddFavoriteCity(it))},
                     backgroundColor = backgroundColor,
                     onCityClickAction = {onAction(CitiesAction.OnClickCity(it))}
@@ -185,12 +184,15 @@ fun CitiesList(
             }
         }
     }
+    if (state.showCityInfo) {
+        CityInfoDialog(city = state.citySelected, onDismiss = { onAction(CitiesAction.OnDismissDialog) })
+    }
 }
 
 @Composable
 fun CityItem(
     city: CityModel,
-    onInfoClick: () -> Unit,
+    onInfoClick: (city: CityModel) -> Unit,
     onToggleFavorite: (city: CityModel) -> Unit,
     backgroundColor: Color,
     onCityClickAction: (city: CityModel)-> Unit,
@@ -235,7 +237,7 @@ fun CityItem(
                     )
                 }
                 Button(
-                    onClick = { onInfoClick() },
+                    onClick = { onInfoClick(city) },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
                     Text(text = stringResource(R.string.text_more_info_button))
@@ -282,6 +284,26 @@ fun SearchBar(
             textStyle = MaterialTheme.typography.bodyMedium
         )
     }
+}
+
+@Composable
+fun CityInfoDialog(city: CityModel, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = city.name, fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                Text(text = "País: ${city.country}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Text(text = "Latitud: ${city.coord.lat}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(text = "Longitud: ${city.coord.lon}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
 }
 
 @Preview

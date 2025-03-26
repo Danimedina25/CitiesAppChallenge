@@ -8,5 +8,6 @@ sealed interface CitiesAction {
     data object OnBackClick: CitiesAction
     data class OnFilterCities(val queryString: String): CitiesAction
     data class OnFilterFavorites(val showFavorites: Boolean): CitiesAction
+    data class OnShowCityInfo(val city:CityModel): CitiesAction
     data object OnDismissDialog: CitiesAction
 }

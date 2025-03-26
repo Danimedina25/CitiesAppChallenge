@@ -48,6 +48,21 @@ class CitiesViewModel @Inject constructor(
             is CitiesAction.OnAddFavoriteCity -> {
                 toggleFavorite(action.city)
             }
+            is CitiesAction.OnShowCityInfo -> {
+                _state.update {
+                    it.copy(
+                        citySelected = action.city,
+                        showCityInfo = true
+                    )
+                }
+            }
+            CitiesAction.OnDismissDialog -> {
+                _state.update {
+                    it.copy(
+                        showCityInfo = false
+                    )
+                }
+            }
             CitiesAction.OnBackClick -> {
 
             }
