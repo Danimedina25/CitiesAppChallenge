@@ -31,7 +31,7 @@ android {
         } else {
             ""
         }
-        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     tasks.withType<Test> {
