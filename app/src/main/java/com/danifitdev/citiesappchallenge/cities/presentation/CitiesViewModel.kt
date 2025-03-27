@@ -1,6 +1,7 @@
 package com.danifitdev.citiesappchallenge.cities.presentation
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.danifitdev.citiesappchallenge.R
@@ -14,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.VisibleForTesting
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,12 +33,18 @@ class CitiesViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(CitiesState())
     val state: StateFlow<CitiesState> = _state
+    /*val state = _state
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(1000L),
+            CitiesState()
+        )*/
+
 
     private val eventChannel = Channel<CitiesEvent>()
     val events = eventChannel.receiveAsFlow()
 
     init {
-        //deleteAllCities()
         getCities()
     }
 
@@ -77,13 +86,19 @@ class CitiesViewModel @Inject constructor(
         _state.update { it.copy(citySelected = city) }
     }
 
-    private fun getCities() {
+    fun getCities() {
         _state.update { it.copy(loading = true)}
         repository.getCities()
             .onEach { cities ->
-            if(cities.isNotEmpty())
-                _state.update { it.copy(cities = cities.sortedBy { it.name }, loading = false)}
-        }.launchIn(viewModelScope)
+                if (cities.isNotEmpty()) {
+                    setCities(cities)
+                }
+                _state.update { it.copy(loading = false) }
+            }
+            .catch { e ->
+                _state.update { it.copy(loading = false) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun deleteAllCities(){
@@ -92,16 +107,17 @@ class CitiesViewModel @Inject constructor(
         }
     }
 
-    private fun setNewSearchQuery(queryString: String){
+    fun setNewSearchQuery(queryString: String){
         _state.value.searchQuery.edit { this.replace(0, this.length, queryString) }
     }
 
-    private fun filterCities() {
+    fun filterCities() {
+        val cities = _state.value.cities
+        val searchQuery = _state.value.searchQuery.text
         viewModelScope.launch {
-            val filteredList = state.value.cities.filter { city ->
-                normalizeCityName(city.name).startsWith(_state.value.searchQuery.text.toString(), ignoreCase = true)
+            val filteredList = cities.filter { city ->
+                normalizeCityName(city.name).startsWith(searchQuery, ignoreCase = true)
             }.sortedBy { it.name }
-
             _state.update {
                 it.copy(
                     filteredCities = filteredList,
@@ -124,6 +140,12 @@ class CitiesViewModel @Inject constructor(
         val toggledFavoriteCity = city.copy(isFavorite = !city.isFavorite)
         viewModelScope.launch {
             repository.toggleFavorite(toggledFavoriteCity)
+        }
+    }
+
+    fun setCities(cities: List<CityModel>) {
+        viewModelScope.launch {
+            _state.update { it.copy(cities = cities.sortedBy { it.name }) }
         }
     }
 }
