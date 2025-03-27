@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+
 android {
     namespace = "com.danifitdev.citiesappchallenge"
     compileSdk = 35
@@ -33,6 +34,11 @@ android {
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        useJUnit()
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -49,6 +55,7 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -74,6 +81,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -95,7 +105,6 @@ dependencies {
     // Lifecycle, ViewModel, LiveData, Flow, y otros componentes
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx.v261)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     // Room Database
@@ -106,13 +115,9 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson) // Convertidor JSON usando Gson
-    implementation(libs.converter.moshi)
 
     // OkHttp (Cliente HTTP para Retrofit)
     implementation(libs.logging.interceptor)
-
-    // Splash screen
-    implementation(libs.androidx.core.splashscreen)
 
     // Kotlin Coroutines
     implementation(libs.kotlinx.coroutines.core)
@@ -124,21 +129,23 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.1")
 
-    // Debugging (para ver el preview y layout inspector en Compose)
-    debugImplementation("androidx.compose.ui:ui-tooling:1.5.1")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.1")
-
     // JUnit para pruebas unitarias
     testImplementation(libs.junit)
 
 // Mockito para mocks
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.inline)
+    // Dependencia para Mockito
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 
 // Coroutines para pruebas
     testImplementation(libs.kotlinx.coroutines.test)
 
     implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(libs.kotlinx.coroutines.test.v171)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockk)
 
     // Hilt Core
     implementation(libs.hilt.android.v250)
