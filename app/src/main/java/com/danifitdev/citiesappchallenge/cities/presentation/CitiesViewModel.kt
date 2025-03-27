@@ -32,13 +32,13 @@ class CitiesViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CitiesState())
-    val state: StateFlow<CitiesState> = _state
-    /*val state = _state
+
+    val state = _state
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(1000L),
+            SharingStarted.Eagerly,
             CitiesState()
-        )*/
+        )
 
 
     private val eventChannel = Channel<CitiesEvent>()
