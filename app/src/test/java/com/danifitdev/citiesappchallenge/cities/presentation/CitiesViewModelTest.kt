@@ -2,22 +2,13 @@ package com.danifitdev.citiesappchallenge.cities.presentation
 
 import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
 import com.danifitdev.citiesappchallenge.cities.domain.repository.CitiesRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Rule
-
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
@@ -68,7 +59,6 @@ class CitiesViewModelTest {
 
         viewModel.setCities(cities)
 
-        // Query that doesn't match any city
         viewModel.setNewSearchQuery("Z")
         viewModel.filterCities()
 
@@ -88,7 +78,6 @@ class CitiesViewModelTest {
 
         viewModel.setCities(cities)
 
-        // Empty search query
         viewModel.setNewSearchQuery("")
         viewModel.filterCities()
 
@@ -108,7 +97,6 @@ class CitiesViewModelTest {
 
         viewModel.setCities(cities)
 
-        // Search with lowercase
         viewModel.setNewSearchQuery("m")
         viewModel.filterCities()
 

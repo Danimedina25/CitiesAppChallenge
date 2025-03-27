@@ -15,18 +15,4 @@ object CitiesNetworkModule {
     fun provideCitiesApiService(retrofitProvider: RetrofitProvider): CitiesApiService {
         return retrofitProvider.provideApiService(CitiesApiService::class.java)
     }
-
-    /* @Provides
- fun provideCitiesRemoteDataSource(
-     apiService: CitiesApiService
- ): CitiesRemoteDataSource {
-     return CitiesRemoteDataSourceImpl(apiService)
- }
-
- @Provides
- fun provideCitiesLocalDataSource(
-     citiesDao: CitiesDao
- ): CitiesLocalDataSource {
-     return CitiesLocalDataSourceImpl(citiesDao)
- }*/
 }

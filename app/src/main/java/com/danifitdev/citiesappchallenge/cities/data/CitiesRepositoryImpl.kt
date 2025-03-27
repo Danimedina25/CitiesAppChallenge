@@ -1,6 +1,5 @@
 package com.danifitdev.citiesappchallenge.cities.data
 
-import android.util.Log
 import com.danifitdev.citiesappchallenge.cities.domain.datasources.CitiesLocalDataSource
 import com.danifitdev.citiesappchallenge.cities.domain.datasources.CitiesRemoteDataSource
 import com.danifitdev.citiesappchallenge.cities.domain.model.CityModel
@@ -9,14 +8,12 @@ import com.danifitdev.citiesappchallenge.core.domain.util.DataError
 import com.danifitdev.citiesappchallenge.core.domain.util.EmptyResult
 import com.danifitdev.citiesappchallenge.core.domain.util.Result
 import com.danifitdev.citiesappchallenge.core.domain.util.asEmptyDataResult
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CitiesRepositoryImpl @Inject constructor(
